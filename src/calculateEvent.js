@@ -1,55 +1,60 @@
-import { addedDiff, deletedDiff, updatedDiff } from './deepObjectDiff'
-
 export default function calculateEvent(originalDocument, editedDocument) {
-  const added = addedDiff(originalDocument, editedDocument)
-  const deleted = deletedDiff(originalDocument, editedDocument)
-  const updated = updatedDiff(originalDocument, editedDocument)
+  const editedDocumentBlockIds = editedDocument.blocks.map(
+    (document) => document.id
+  )
 
-  console.info('added,', JSON.stringify(added, null, 2))
-  const addedEvents = []
-  if (Object.keys(added).length) {
-    for (const event of Object.keys(added.blocks)) {
-      addedEvents.push({
-        type: 'addedItem',
-        data: {
-          path: `blocks.${event}`,
-          value: {
-            ...added.blocks[event],
-          },
-        },
-      })
+  const originalDocumentBlockIds = originalDocument?.blocks.map(
+    (block) => block.id
+  )
+
+  const newSections = editedDocument?.blocks.filter(
+    (block) => !originalDocumentBlockIds.includes(block.id)
+  )
+
+  const removedSections = originalDocument?.blocks.filter(
+    (block) => !editedDocumentBlockIds.includes(block.id)
+  )
+
+  const updatedSections = editedDocument?.blocks.filter((block) => {
+    if (!originalDocumentBlockIds.includes(block.id)) {
+      return false
     }
-  }
 
-  const deletedEvents = []
-  if (Object.keys(deleted).length) {
-    for (const event of Object.keys(deleted.blocks)) {
-      deletedEvents.push({
-        type: 'deletedItem',
-        data: {
-          path: `blocks.${event}`,
-        },
-      })
-    }
-  }
+    const originalBlock = originalDocument.blocks.find(
+      (currentBlock) => currentBlock.id === block.id
+    )
 
-  console.info('updated,', JSON.stringify(updated, null, 2))
+    return JSON.stringify(originalBlock) !== JSON.stringify(block)
+  })
 
-  const updatedEvents = []
-  if (Object.keys(updated).length) {
-    for (const event of Object.keys(updated.blocks)) {
-      updatedEvents.push({
-        type: 'updatedItem',
-        data: {
-          path: `blocks.${event}`,
-          value: {
-            ...updated.blocks[event],
-          },
-        },
-      })
-    }
-  }
+  const addedSectionEvents = newSections.map((section) => ({
+    type: 'addedSection',
+    data: {
+      position: editedDocumentBlockIds.indexOf(section.id),
+      path: `blocks.${section.id}`,
+      value: section,
+    },
+  }))
 
-  return [...addedEvents, ...updatedEvents, ...deletedEvents]
-  // return [...addedSectionEvents, ...removedSectionEvents]
+  const removedSectionEvents = removedSections.map((section) => ({
+    type: 'removedSection',
+    data: {
+      path: `blocks.${section.id}`,
+    },
+  }))
+
+  const updatedSectionEvents = updatedSections.map((section) => ({
+    type: 'updatedSection',
+    data: {
+      position: editedDocumentBlockIds.indexOf(section.id),
+      path: `blocks.${section.id}`,
+      value: section,
+    },
+  }))
+
+  return [
+    ...addedSectionEvents,
+    ...updatedSectionEvents,
+    ...removedSectionEvents,
+  ]
 }

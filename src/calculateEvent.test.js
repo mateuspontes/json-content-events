@@ -23,9 +23,10 @@ test('identifies a section was added', () => {
   // Assert
   const expectedEvents = [
     {
-      type: 'addedItem',
+      type: 'addedSection',
       data: {
         path: 'blocks.1625778947895',
+        position: 0,
         value: {
           id: 1625778947895,
           name: 'RichText',
@@ -41,7 +42,7 @@ test('identifies a section was added', () => {
   expect(events).toEqual(expectedEvents)
 })
 
-test('identifies two sections was added', () => {
+test('identifies two sections were added', () => {
   // Arrange
   const originalDocument = { extraBlocks: [], blocks: [] }
   const editedDocument = {
@@ -71,9 +72,10 @@ test('identifies two sections was added', () => {
   // Assert
   const expectedEvents = [
     {
-      type: 'addedItem',
+      type: 'addedSection',
       data: {
         path: 'blocks.1625778947895',
+        position: 0,
         value: {
           id: 1625778947895,
           name: 'RichText',
@@ -85,9 +87,10 @@ test('identifies two sections was added', () => {
       },
     },
     {
-      type: 'addedItem',
+      type: 'addedSection',
       data: {
         path: 'blocks.4789516257789',
+        position: 1,
         value: {
           id: 4789516257789,
           name: 'Text',
@@ -108,22 +111,7 @@ test('identifies a section was removed', () => {
     extraBlocks: [],
     blocks: [
       {
-        id: 1625778947895,
-        name: 'RichText',
-        props: {},
-      },
-      {
-        id: 1625778947896,
-        name: 'RichText',
-        props: {},
-      },
-      {
-        id: 1625778947897,
-        name: 'RichText',
-        props: {},
-      },
-      {
-        id: 1625778947898,
+        id: 98,
         name: 'RichText',
         props: {},
       },
@@ -132,23 +120,7 @@ test('identifies a section was removed', () => {
 
   const editedDocument = {
     extraBlocks: [],
-    blocks: [
-      {
-        id: 1625778947895,
-        name: 'RichText',
-        props: {},
-      },
-      {
-        id: 1625778947896,
-        name: 'RichText',
-        props: {},
-      },
-      {
-        id: 1625778947897,
-        name: 'RichText',
-        props: {},
-      },
-    ],
+    blocks: [],
   }
 
   // Act
@@ -157,9 +129,9 @@ test('identifies a section was removed', () => {
   // Assert
   const expectedEvents = [
     {
-      type: 'deletedItem',
+      type: 'removedSection',
       data: {
-        path: 'blocks.1625778947898',
+        path: 'blocks.98',
       },
     },
   ]
@@ -167,18 +139,18 @@ test('identifies a section was removed', () => {
   expect(events).toEqual(expectedEvents)
 })
 
-test.skip('identifies a section was added in the position N', () => {
+test('identifies a section was added in the position N', () => {
   // Arrange
   const originalDocument = {
     extraBlocks: [],
     blocks: [
       {
-        id: 1625778947895,
+        id: 95,
         name: 'RichText',
         props: {},
       },
       {
-        id: 1625778947896,
+        id: 96,
         name: 'RichText',
         props: {},
       },
@@ -189,17 +161,17 @@ test.skip('identifies a section was added in the position N', () => {
     extraBlocks: [],
     blocks: [
       {
-        id: 1625778947895,
+        id: 95,
         name: 'RichText',
         props: {},
       },
       {
-        id: 1625778947896,
+        id: 96,
         name: 'RichText',
         props: {},
       },
       {
-        id: 1625778947899,
+        id: 99,
         name: 'NewSection',
         props: {},
       },
@@ -212,12 +184,12 @@ test.skip('identifies a section was added in the position N', () => {
   // Assert
   const expectedEvents = [
     {
-      type: 'addedItem',
+      type: 'addedSection',
       data: {
         position: 2,
-        path: 'blocks.1625778947899',
+        path: 'blocks.99',
         value: {
-          id: 1625778947899,
+          id: 99,
           name: 'NewSection',
           props: {},
         },
@@ -228,18 +200,18 @@ test.skip('identifies a section was added in the position N', () => {
   expect(events).toEqual(expectedEvents)
 })
 
-test.only('identifies changed sections', () => {
+test('identifies changed sections', () => {
   // Arrange
   const originalDocument = {
     extraBlocks: [],
     blocks: [
       {
-        id: 1625778947895,
+        id: 95,
         name: 'RichText',
         props: { id: 'a1', foo: 1 },
       },
       {
-        id: 1625778947896,
+        id: 96,
         name: 'RichText',
         props: {},
       },
@@ -250,17 +222,14 @@ test.only('identifies changed sections', () => {
     extraBlocks: [],
     blocks: [
       {
-        id: 1625778947895,
+        id: 95,
         name: 'RichText',
-        props: {
-          id: 'a1',
-          foo: 2,
-        },
+        props: { id: 'a1', foo: 2 },
       },
       {
-        id: 1625778947896,
+        id: 96,
         name: 'RichText',
-        props: { id: 'b1', bar: 1 },
+        props: { id: 'b2', bar: 2 },
       },
     ],
   }
@@ -271,21 +240,26 @@ test.only('identifies changed sections', () => {
   // Assert
   const expectedEvents = [
     {
-      type: 'addedItem',
+      type: 'updatedSection',
       data: {
-        position: 1,
-        path: 'blocks.1625778947896',
+        path: 'blocks.95',
+        position: 0,
         value: {
-          props: { id: 'b1', bar: 1 },
+          id: 95,
+          name: 'RichText',
+          props: { id: 'a1', foo: 2 },
         },
       },
     },
     {
-      type: 'updatedItem',
+      type: 'updatedSection',
       data: {
-        path: 'blocks.1625778947895.props',
+        position: 1,
+        path: 'blocks.96',
         value: {
-          a1: { foo: 2 },
+          id: 96,
+          name: 'RichText',
+          props: { id: 'b2', bar: 2 },
         },
       },
     },
@@ -293,64 +267,3 @@ test.only('identifies changed sections', () => {
 
   expect(events).toEqual(expectedEvents)
 })
-
-test.skip('identifies add/removed/changed item in an array', () => {
-  // Arrange
-  const originalDocument = {
-    extraBlocks: [],
-    blocks: [
-      {
-        id: 1625778947897,
-        name: 'Carrousel',
-        props: {
-          allItems: [
-            {
-              sources: [],
-            },
-          ],
-        },
-      },
-    ],
-  }
-
-  const editedDocument = {
-    extraBlocks: [],
-    blocks: [
-      {
-        id: 123,
-        name: 'Carrousel',
-        props: {
-          allItems: [
-            {
-              id: 'abc',
-              sources: [
-                {
-                  id: 456,
-                  srcSet: 'https://...',
-                },
-              ],
-            },
-          ],
-        },
-      },
-    ],
-  }
-
-  // Act
-  const expectedEvents = [
-    {
-      type: 'addedItem',
-      data: {
-        path: 'blocks.123.allItems.abc.sources',
-        position: 0,
-        item: {
-          id: 456,
-          srcSet: 'https://...',
-        },
-      },
-    },
-  ]
-  // Assert
-})
-
-test.todo('identifies add/removed/changed item in N nested array')
